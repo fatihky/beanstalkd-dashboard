@@ -1,0 +1,20 @@
+{
+  "name": "beanstalkd-ts-console",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "preact": "^10.27.0",
+    "preact-iso": "^2.9.2"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.0"
+  }
+}
