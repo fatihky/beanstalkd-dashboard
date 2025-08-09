@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "target": "es2020"
+  }
+}

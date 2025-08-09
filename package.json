@@ -9,11 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.84.2",
+    "@trpc/client": "^11.4.4",
+    "@trpc/server": "^11.4.4",
+    "@trpc/tanstack-react-query": "^11.4.4",
+    "beanstalkd-ts": "^0.1.5",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "preact": "^10.27.0",
     "preact-iso": "^2.9.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.1.4",
     "@preact/preset-vite": "^2.10.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "ts-node": "^10.9.2",
     "typescript": "~5.8.3",
     "vite": "^7.1.0"
   }
