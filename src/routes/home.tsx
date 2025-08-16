@@ -1,14 +1,13 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   type ColumnDef,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { Pause, Play } from 'lucide-react';
 import { useMemo } from 'preact/hooks';
+import { TubeActions } from '@/components/tubes/tube-actions';
 import type { TubeWithStats } from '../../server/router';
 import { DataTable } from '../components/datatable';
-import { Button } from '../components/retroui/Button';
 import { useTRPC } from '../utils/trpc';
 
 export default function HomePage() {
@@ -17,12 +16,6 @@ export default function HomePage() {
     trpc.tubes.list.queryOptions(void 0, {
       refetchInterval: 1000,
     }),
-  );
-  const pauseTube = useMutation(
-    trpc.tubes.pause.mutationOptions({ onMutate: () => result.refetch() }),
-  );
-  const resumeTube = useMutation(
-    trpc.tubes.resume.mutationOptions({ onMutate: () => result.refetch() }),
   );
   const columns = useMemo<ColumnDef<TubeWithStats>[]>(
     () => [
@@ -89,30 +82,17 @@ export default function HomePage() {
           row: {
             original: { name, stats },
           },
-        }) => {
-          const paused = stats.pause > 0 && stats.pauseTimeLeft > 0;
-
-          return paused ? (
-            <Button
-              disabled={resumeTube.isPending}
-              size="icon"
-              onClick={() => resumeTube.mutate(name)}
-            >
-              <Play className="w-4 h-4" />
-            </Button>
-          ) : (
-            <Button
-              disabled={pauseTube.isPending}
-              size="icon"
-              onClick={() => pauseTube.mutate([name, 99999])}
-            >
-              <Pause className="w-4 h-4" />
-            </Button>
-          );
-        },
+        }) => (
+          <TubeActions
+            name={name}
+            pause={stats.pause}
+            pauseTimeLeft={stats.pauseTimeLeft}
+            onMutate={result.refetch}
+          />
+        ),
       },
     ],
-    [pauseTube, resumeTube],
+    [result.refetch],
   );
   const table = useReactTable<TubeWithStats>({
     columns,
