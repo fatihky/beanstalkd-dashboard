@@ -7,7 +7,24 @@ export default function HomePage() {
 
   return (
     <div>
-      <pre>{JSON.stringify(result, null, 2)}</pre>
+      {/* tubes */}
+
+      <h5>Tubes</h5>
+
+      <table>
+        <thead>
+          <tr>
+            <th>tube name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {result.data?.map((tube) => (
+            <tr key={tube}>
+              <td>{tube}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
