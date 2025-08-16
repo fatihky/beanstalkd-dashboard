@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:trpc": "bun --watch --no-clear-console server/index.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
