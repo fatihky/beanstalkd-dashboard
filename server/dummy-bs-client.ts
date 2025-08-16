@@ -34,7 +34,14 @@ async function worker() {
 }
 
 async function main() {
-  await Promise.all([producer(), producer(), worker(), worker()]);
+  await Promise.all([
+    producer(),
+    producer(),
+    producer(),
+    producer(),
+    worker(),
+    worker(),
+  ]);
 }
 
 main().catch((err) => {
