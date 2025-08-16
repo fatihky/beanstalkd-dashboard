@@ -1,5 +1,11 @@
-import { render } from 'preact'
-import './index.css'
-import { App } from './app.tsx'
+import { render } from "preact";
+import "./index.css";
+import { App } from "./app.tsx";
 
-render(<App />, document.getElementById('app')!)
+// retroui'ın fontları
+// https://www.retroui.dev/docs/install/vite
+import "@fontsource/archivo-black";
+// Supports weights 300-700
+import "@fontsource-variable/space-grotesk";
+
+render(<App />, document.getElementById("app")!);
