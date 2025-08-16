@@ -13,7 +13,11 @@ import { useTRPC } from '../utils/trpc';
 
 export default function HomePage() {
   const trpc = useTRPC();
-  const result = useQuery(trpc.tubes.list.queryOptions());
+  const result = useQuery(
+    trpc.tubes.list.queryOptions(void 0, {
+      refetchInterval: 1000,
+    }),
+  );
   const pauseTube = useMutation(
     trpc.tubes.pause.mutationOptions({ onMutate: () => result.refetch() }),
   );
