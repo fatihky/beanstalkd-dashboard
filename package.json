@@ -26,8 +26,10 @@
     "lucide-react": "^0.539.0",
     "preact": "^10.27.0",
     "preact-iso": "^2.9.2",
+    "react": "^19.1.1",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.12"
+    "tailwindcss": "^4.1.12",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
