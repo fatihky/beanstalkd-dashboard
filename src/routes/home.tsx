@@ -1,6 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  type ColumnDef,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { Pause, Play } from 'lucide-react';
+import { useMemo } from 'preact/hooks';
 import type { TubeWithStats } from '../../server/router';
 import { DataTable } from '../components/datatable';
 import { Button } from '../components/retroui/Button';
@@ -15,8 +20,8 @@ export default function HomePage() {
   const resumeTube = useMutation(
     trpc.tubes.resume.mutationOptions({ onMutate: () => result.refetch() }),
   );
-  const table = useReactTable<TubeWithStats>({
-    columns: [
+  const columns = useMemo<ColumnDef<TubeWithStats>[]>(
+    () => [
       { id: 'name', header: 'tube name', cell: (ctx) => ctx.row.original.name },
       {
         id: 'cmdDelete',
@@ -103,6 +108,10 @@ export default function HomePage() {
         },
       },
     ],
+    [pauseTube, resumeTube],
+  );
+  const table = useReactTable<TubeWithStats>({
+    columns,
     data: result.data ?? [],
     getCoreRowModel: getCoreRowModel(),
   });
