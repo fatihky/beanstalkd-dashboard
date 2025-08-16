@@ -13,7 +13,7 @@ async function producer() {
   for (;;) {
     await bsClient.put('sa as', { ttr: 1000 });
 
-    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 1000)));
+    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 500)));
   }
 }
 
@@ -27,14 +27,14 @@ async function worker() {
   for (;;) {
     const job = await bsClient.reserve();
 
-    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 1000)));
+    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 200)));
 
     await bsClient.deleteJob(job.id);
   }
 }
 
 async function main() {
-  await Promise.all([producer(), worker()]);
+  await Promise.all([producer(), producer(), worker(), worker()]);
 }
 
 main().catch((err) => {
