@@ -7,6 +7,7 @@ import {
 import { useMemo } from 'preact/hooks';
 import { TubeActions } from '@/components/tubes/tube-actions';
 import type { TubeWithStats } from '../../server/router';
+import { AutoHighlightNumberCell } from '../components/auto-highlight-number-cell';
 import { DataTable } from '../components/datatable';
 import { useTRPC } from '../utils/trpc';
 
@@ -22,57 +23,89 @@ export default function HomePage() {
       { id: 'name', header: 'tube name', cell: (ctx) => ctx.row.original.name },
       {
         id: 'cmdDelete',
-        cell: ({ row }) => row.original.stats.cmdDelete,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.cmdDelete} />
+        ),
         header: 'Deletes',
       },
       {
         id: 'cmdPauseTube',
-        cell: ({ row }) => row.original.stats.cmdPauseTube,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.cmdPauseTube} />
+        ),
         header: 'Pauses',
       },
       {
         id: 'currentJobsBuried',
-        cell: ({ row }) => row.original.stats.currentJobsBuried,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell
+            value={row.original.stats.currentJobsBuried}
+          />
+        ),
         header: 'Buried Jobs',
       },
       {
         id: 'currentJobsDelayed',
-        cell: ({ row }) => row.original.stats.currentJobsDelayed,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell
+            value={row.original.stats.currentJobsDelayed}
+          />
+        ),
         header: 'Delayed Jobs',
       },
       {
         id: 'currentJobsReady',
-        cell: ({ row }) => row.original.stats.currentJobsReady,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell
+            value={row.original.stats.currentJobsReady}
+          />
+        ),
         header: 'Ready Jobs',
       },
       {
         id: 'currentJobsReserved',
-        cell: ({ row }) => row.original.stats.currentJobsReserved,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell
+            value={row.original.stats.currentJobsReserved}
+          />
+        ),
         header: 'Reserved Jobs',
       },
       {
         id: 'currentJobsUrgent',
-        cell: ({ row }) => row.original.stats.currentJobsUrgent,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell
+            value={row.original.stats.currentJobsUrgent}
+          />
+        ),
         header: 'Urgent Jobs',
       },
       {
         id: 'currentUsing',
-        cell: ({ row }) => row.original.stats.currentUsing,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.currentUsing} />
+        ),
         header: 'Producers',
       },
       {
         id: 'currentWaiting',
-        cell: ({ row }) => row.original.stats.currentWaiting,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.currentWaiting} />
+        ),
         header: 'Consumers Waiting',
       },
       {
         id: 'currentWatching',
-        cell: ({ row }) => row.original.stats.currentWatching,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.currentWatching} />
+        ),
         header: 'Consumers',
       },
       {
         id: 'totalJobs',
-        cell: ({ row }) => row.original.stats.totalJobs,
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.totalJobs} />
+        ),
         header: 'Total Jobs',
       },
       {
