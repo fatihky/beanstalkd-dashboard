@@ -11,13 +11,13 @@ export function AutoHighlightNumberCell({ value }: { value: number }) {
     setChanged(true);
     setLastValue(value);
 
-    setTimeout(() => setChanged(false), 500);
+    setTimeout(() => setChanged(false), 250);
   }, [lastValue, value]);
 
   return (
     <span
       className={cn(
-        'transition duration-300 p-2',
+        'transition duration-200 p-2',
         changed ? 'text-primary font-bold' : 'text-black',
       )}
     >

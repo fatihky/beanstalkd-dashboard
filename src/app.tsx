@@ -1,9 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ErrorBoundary, LocationProvider, Route, Router } from "preact-iso";
-import { NotFound } from "./routes/404";
-import HomePage from "./routes/home";
-import { trpc } from "./trpc-client";
-import { TRPCProvider } from "./utils/trpc";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorBoundary, LocationProvider, Route, Router } from 'preact-iso';
+import { NotFound } from './routes/404';
+import HomePage from './routes/home';
+import { trpc } from './trpc-client';
+import { TRPCProvider } from './utils/trpc';
+import { AppProvider } from './app-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,10 +22,12 @@ export function App() {
       <TRPCProvider queryClient={queryClient} trpcClient={trpc}>
         <LocationProvider>
           <ErrorBoundary>
-            <Router>
-              <Route path="/" component={HomePage} />
-              <Route default component={NotFound} />
-            </Router>
+            <AppProvider>
+              <Router>
+                <Route path="/" component={HomePage} />
+                <Route default component={NotFound} />
+              </Router>
+            </AppProvider>
           </ErrorBoundary>
         </LocationProvider>
       </TRPCProvider>

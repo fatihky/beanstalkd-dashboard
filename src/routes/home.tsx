@@ -4,8 +4,13 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { ListFilter } from 'lucide-react';
 import { useMemo } from 'preact/hooks';
+import { AppHeader } from '@/components/app-header';
+import { Button } from '@/components/retroui/Button';
+import { Menu } from '@/components/retroui/Menu';
 import { TubeActions } from '@/components/tubes/tube-actions';
+import { useServerStore } from '@/server-store';
 import type { TubeWithStats } from '../../server/router';
 import { AutoHighlightNumberCell } from '../components/auto-highlight-number-cell';
 import { DataTable } from '../components/datatable';
@@ -13,10 +18,9 @@ import { useTRPC } from '../utils/trpc';
 
 export default function HomePage() {
   const trpc = useTRPC();
+  const { selectedServerId: serverId } = useServerStore();
   const result = useQuery(
-    trpc.tubes.list.queryOptions(void 0, {
-      refetchInterval: 1000,
-    }),
+    trpc.tubes.list.queryOptions({ serverId }, { refetchInterval: 400 }),
   );
   const columns = useMemo<ColumnDef<TubeWithStats>[]>(
     () => [
@@ -117,7 +121,8 @@ export default function HomePage() {
           },
         }) => (
           <TubeActions
-            name={name}
+            serverId={serverId}
+            tube={name}
             pause={stats.pause}
             pauseTimeLeft={stats.pauseTimeLeft}
             onMutate={result.refetch}
@@ -125,7 +130,7 @@ export default function HomePage() {
         ),
       },
     ],
-    [result.refetch],
+    [result.refetch, serverId],
   );
   const table = useReactTable<TubeWithStats>({
     columns,
@@ -135,9 +140,30 @@ export default function HomePage() {
 
   return (
     <div className="p-3">
+      <AppHeader />
+
       {/* tubes */}
 
-      <span className="text-xl">Tubes</span>
+      <div className="flex justify-between my-2 relative">
+        <span className="text-xl">Tubes</span>
+        <div>
+          <Menu>
+            <Menu.Trigger>
+              <Button size="icon">
+                <ListFilter className="w-4 h-4" />
+              </Button>
+            </Menu.Trigger>
+            <Menu.Content className="min-w-36">
+              {table.getAllColumns().map((column) => (
+                <Menu.Item key={column.id}>
+                  {column.columnDef.header ?? column.id}
+                </Menu.Item>
+              ))}
+              <Menu.Item></Menu.Item>
+            </Menu.Content>
+          </Menu>
+        </div>
+      </div>
 
       <DataTable result={result} table={table} />
     </div>
