@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary, LocationProvider, Route, Router } from 'preact-iso';
+import { AppProvider } from './app-provider';
 import { NotFound } from './routes/404';
 import HomePage from './routes/home';
+import TubeDetailsPage from './routes/tube-detais';
 import { trpc } from './trpc-client';
 import { TRPCProvider } from './utils/trpc';
-import { AppProvider } from './app-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,10 @@ export function App() {
             <AppProvider>
               <Router>
                 <Route path="/" component={HomePage} />
+                <Route
+                  path="/servers/:serverId/tubes/:tube"
+                  component={TubeDetailsPage}
+                />
                 <Route default component={NotFound} />
               </Router>
             </AppProvider>

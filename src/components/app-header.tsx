@@ -1,7 +1,8 @@
-import { useServerStore } from '@/server-store';
-import { Select } from './retroui/Select';
-import { Label } from './retroui/Label';
 import { useId } from 'preact/hooks';
+import { useServerStore } from '@/server-store';
+import { Label } from './retroui/Label';
+import { Select } from './retroui/Select';
+import { useLocation, useRoute } from 'preact-iso';
 
 export function AppHeader() {
   const serverStore = useServerStore();
@@ -9,11 +10,15 @@ export function AppHeader() {
     (server) => server.id === serverStore.selectedServerId,
   );
   const serverSelectId = useId();
+  const route = useRoute();
+  const location = useLocation();
 
   return (
     <div className="w-full flex items-center justify-between">
       <div>
-        <span className="text-lg font-bold">beanstalkd-ts-console</span>
+        <a className="text-lg font-bold" href="/">
+          beanstalkd-ts-console
+        </a>
       </div>
       <div className="flex gap-2 items-center">
         <Label htmlFor={serverSelectId} className="text-lg">
@@ -26,7 +31,11 @@ export function AppHeader() {
               (s) => s.id.toString() === id,
             );
 
-            if (server) serverStore.setSelectedServer(server);
+            if (server) {
+              serverStore.setSelectedServer(server);
+
+              if (route.path !== '/') location.route('/'); // redirect to home
+            }
           }}
         >
           <Select.Trigger id={serverSelectId} className="min-w-60">

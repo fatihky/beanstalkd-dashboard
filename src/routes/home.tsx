@@ -7,15 +7,16 @@ import {
 import { Check, ListFilter, X } from 'lucide-react';
 import { useEffect, useMemo } from 'preact/hooks';
 import { AppHeader } from '@/components/app-header';
-import { Button } from '@/components/retroui/Button';
+import { Button, buttonVariants } from '@/components/retroui/Button';
 import { Menu } from '@/components/retroui/Menu';
 import { TubeActions } from '@/components/tubes/tube-actions';
+import { usePreferencesStore } from '@/preferences-store';
 import { useServerStore } from '@/server-store';
 import type { TubeWithStats } from '../../server/router';
 import { AutoHighlightNumberCell } from '../components/auto-highlight-number-cell';
 import { DataTable } from '../components/datatable';
 import { useTRPC } from '../utils/trpc';
-import { usePreferencesStore } from '@/preferences-store';
+import { cn } from '@/lib/utils';
 
 export default function HomePage() {
   const trpc = useTRPC();
@@ -26,7 +27,18 @@ export default function HomePage() {
   const prefs = usePreferencesStore();
   const columns = useMemo<ColumnDef<TubeWithStats>[]>(
     () => [
-      { id: 'name', header: 'Tube', cell: (ctx) => ctx.row.original.name },
+      {
+        id: 'name',
+        header: 'Tube',
+        cell: (ctx) => (
+          <a
+            className={cn(buttonVariants({ variant: 'link' }), 'text-sm')}
+            href={`/servers/${serverId}/tubes/${ctx.row.original.name}`}
+          >
+            {ctx.row.original.name}
+          </a>
+        ),
+      },
       {
         id: 'currentJobsUrgent',
         cell: ({ row }) => (
@@ -179,7 +191,10 @@ export default function HomePage() {
             {table.getAllColumns().map((column) => (
               <Menu.Item
                 key={column.id}
-                className="flex justify-between"
+                className={cn(
+                  'flex justify-between',
+                  column.getIsVisible() ? 'bg-primary/40' : 'bg-primary/5',
+                )}
                 onClick={() =>
                   prefs.setVisibility('tubeListColumnVisibility', {
                     ...prefs.tubeListColumnVisibility,
