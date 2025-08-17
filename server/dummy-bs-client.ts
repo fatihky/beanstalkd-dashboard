@@ -11,29 +11,43 @@ async function producer() {
   await bsClient.use(tube);
 
   for (;;) {
-    await bsClient.put('sa as', { ttr: 1000 });
+    await Promise.all([
+      bsClient.put('demo content', { ttr: 1000 }),
+      bsClient.put('demo content', { ttr: 1000 }),
+      bsClient.put('demo content', { ttr: 1000 }),
+      bsClient.put('demo content', { ttr: 1000 }),
+      bsClient.put('demo content', { ttr: 1000 }),
+      bsClient.put('demo content', { delay: 10, ttr: 1000 }),
+    ]);
 
-    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 500)));
+    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 400)));
   }
 }
 
-async function worker() {
+async function worker(limit = Infinity) {
   const bsClient = new BeanstalkdClient();
 
   await bsClient.connect();
   await bsClient.watch(tube);
   await bsClient.ignore('default');
 
-  for (;;) {
+  for (let jobs = 0; jobs < limit; jobs++) {
     const job = await bsClient.reserve();
 
-    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 200)));
+    await new Promise((r) => setTimeout(r, Math.round(Math.random() * 100)));
 
     await bsClient.deleteJob(job.id);
   }
+
+  await bsClient.close();
 }
 
 async function main() {
+  setInterval(() => {
+    worker(Math.round(Math.random() * 10));
+    worker(Math.round(Math.random() * 20));
+  }, 100);
+
   await Promise.all([
     producer(),
     producer(),

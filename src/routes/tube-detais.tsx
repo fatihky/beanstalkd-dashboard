@@ -5,14 +5,15 @@ import { useRoute } from 'preact-iso';
 import { AppHeader } from '@/components/app-header';
 import { AutoHighlightNumberCell } from '@/components/auto-highlight-number-cell';
 import { PeekJob } from '@/components/jobs/peek-job';
+import { Alert } from '@/components/retroui/Alert';
 import { Badge } from '@/components/retroui/Badge';
 import { buttonVariants } from '@/components/retroui/Button';
 import { Card } from '@/components/retroui/Card';
 import { TubeActions } from '@/components/tubes/tube-actions';
 import { cn } from '@/lib/utils';
+import { useServerStore } from '@/server-store';
 import { useTRPC } from '@/utils/trpc';
 import { NotFound } from './404';
-import { Alert } from '@/components/retroui/Alert';
 
 function TubeStatsCard({
   stats,
@@ -107,7 +108,15 @@ function TubeStatsCard({
   );
 }
 
-function TubeDetails({ serverId, tube }: { serverId: number; tube: string }) {
+function TubeDetails({
+  serverAddress,
+  serverId,
+  tube,
+}: {
+  serverAddress: string;
+  serverId: number;
+  tube: string;
+}) {
   const trpc = useTRPC();
   const stats = useQuery(
     trpc.tubes.tubeStats.queryOptions(
@@ -138,6 +147,7 @@ function TubeDetails({ serverId, tube }: { serverId: number; tube: string }) {
         <span>{tube}</span>
 
         <TubeActions
+          serverAddress={serverAddress}
           serverId={serverId}
           tube={tube}
           pause={stats.data?.pause ?? 0}
@@ -160,9 +170,16 @@ function TubeDetails({ serverId, tube }: { serverId: number; tube: string }) {
 export default function TubeDetailsPage() {
   const { params } = useRoute();
   const { serverId, tube } = params;
+  const servers = useServerStore((s) => s.servers);
+  const server = servers.find((s) => s.id === Number(serverId));
 
-  if (!serverId) return <NotFound />;
-  if (!tube) return <NotFound />;
+  if (!serverId || !server || !tube) return <NotFound />;
 
-  return <TubeDetails serverId={Number(serverId)} tube={tube} />;
+  return (
+    <TubeDetails
+      serverAddress={server.address}
+      serverId={Number(serverId)}
+      tube={tube}
+    />
+  );
 }

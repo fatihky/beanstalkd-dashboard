@@ -2,6 +2,9 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import React, { type ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
+const outline =
+  'shadow-md hover:shadow-none bg-transparent border-2 transition hover:translate-y-1';
+
 export const buttonVariants = cva(
   'font-head transition-all outline-hidden cursor-pointer duration-200 font-medium flex items-center',
   {
@@ -11,9 +14,9 @@ export const buttonVariants = cva(
           'shadow-md hover:shadow-none bg-primary text-black border-2 border-black transition hover:translate-y-1 hover:bg-primary-hover',
         secondary:
           'shadow-md hover:shadow-none bg-secondary shadow-primary text-secondary-foreground border-2 border-black transition hover:translate-y-1',
-        outline:
-          'shadow-md hover:shadow-none bg-transparent border-2 transition hover:translate-y-1',
+        outline,
         link: 'bg-transparent hover:underline',
+        danger: `${outline} border-red-600 text-red-600 shadow-red-900`,
       },
       size: {
         sm: 'px-3 py-1 text-sm shadow hover:shadow-none',

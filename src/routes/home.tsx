@@ -20,7 +20,10 @@ import { cn } from '@/lib/utils';
 
 export default function HomePage() {
   const trpc = useTRPC();
-  const { selectedServerId: serverId } = useServerStore();
+  const serverStore = useServerStore();
+  const serverId = serverStore.selectedServerId;
+  const serverAddress =
+    serverStore.servers.find((s) => s.id === serverId)?.address ?? '-';
   const result = useQuery(
     trpc.tubes.list.queryOptions({ serverId }, { refetchInterval: 400 }),
   );
@@ -135,6 +138,7 @@ export default function HomePage() {
           },
         }) => (
           <TubeActions
+            serverAddress={serverAddress}
             serverId={serverId}
             tube={name}
             pause={stats.pause}
@@ -144,7 +148,7 @@ export default function HomePage() {
         ),
       },
     ],
-    [result.refetch, serverId],
+    [result.refetch, serverAddress, serverId],
   );
   const table = useReactTable<TubeWithStats>({
     columns,
@@ -180,9 +184,9 @@ export default function HomePage() {
 
       {/* tubes */}
 
-      <div className="flex gap-2 my-2">
+      <div className="flex items-center gap-4 my-2">
         <Menu>
-          <Menu.Trigger>
+          <Menu.Trigger asChild>
             <Button size="icon">
               <ListFilter className="w-4 h-4" />
             </Button>

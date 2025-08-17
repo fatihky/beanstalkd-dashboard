@@ -1,6 +1,7 @@
 import { type JobStats, NotFoundError, type TubeStats } from 'beanstalkd-ts';
 import { container } from 'tsyringe';
 import z from 'zod';
+import type { BeanstalkdServer } from './beanstalkd';
 import injectionTokens from './injection-tokens';
 import { publicProcedure, router } from './trpc';
 
@@ -31,11 +32,33 @@ export const appRouter = router({
     list: publicProcedure.query(async () => servers()),
   },
   jobs: {
-    peekBuried: jobStatsProcedure('peekBuried'),
-    peekDelayed: jobStatsProcedure('peekDelayed'),
-    peekReady: jobStatsProcedure('peekReady'),
+    peekBuried: jobStatsProcedure('buried'),
+    peekDelayed: jobStatsProcedure('delayed'),
+    peekReady: jobStatsProcedure('ready'),
   },
   tubes: {
+    clear: publicProcedure
+      .input(z.object({ serverId: z.int(), tube: z.string() }))
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+        const states = ['buried', 'delayed', 'ready'] as const;
+
+        await server.bsClient.use(opts.input.tube);
+
+        for (const state of states) {
+          for (;;) {
+            const job = await peekJob(server, state);
+
+            if (!job) break;
+
+            await server.bsClient.deleteJob(job.jobId);
+          }
+        }
+
+        await server.bsClient.use('default');
+
+        return 'ok';
+      }),
     pause: publicProcedure
       .input(
         z.object({ serverId: z.int(), tube: z.string(), seconds: z.int() }),
@@ -71,17 +94,20 @@ export const appRouter = router({
   },
 });
 
-function jobStatsProcedure(method: 'peekBuried' | 'peekDelayed' | 'peekReady') {
+function jobStatsProcedure(state: 'buried' | 'delayed' | 'ready') {
   return publicProcedure
     .input(z.object({ serverId: z.int(), tube: z.string() }))
     .query(async (opts): Promise<JobWitStats | null> => {
       const server = getServer(opts.input.serverId);
       const { tube } = opts.input;
 
-      try {
-        await server.bsClient.use(tube);
+      await server.bsClient.use(tube);
 
-        const job = await server.bsClient[method]();
+      const job = await peekJob(server, state);
+
+      if (!job) return null;
+
+      try {
         const jobStats = await server.bsClient.statsJob(job.jobId);
 
         return {
@@ -90,13 +116,36 @@ function jobStatsProcedure(method: 'peekBuried' | 'peekDelayed' | 'peekReady') {
         };
       } catch (err) {
         if (err instanceof NotFoundError) {
-          console.log('not found', method, server.address, opts.input.tube);
           return null;
         }
 
         throw err; // rethrow
       }
     });
+}
+
+async function peekJob(
+  server: BeanstalkdServer,
+  state: 'buried' | 'delayed' | 'ready',
+) {
+  try {
+    const job =
+      await server.bsClient[
+        state === 'buried'
+          ? 'peekBuried'
+          : state === 'delayed'
+            ? 'peekDelayed'
+            : 'peekReady'
+      ]();
+
+    return job;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      return null;
+    }
+
+    throw err; // rethrow
+  }
 }
 
 // Export type router type signature,
