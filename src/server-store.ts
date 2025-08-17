@@ -19,6 +19,9 @@ export const useServerStore = create(
       setSelectedServer: (server) => set({ selectedServerId: server.id }),
       setServers: (servers: BeanstalkdServerMeta[]) => set({ servers }),
     }),
-    { name: 'servers', storage: createJSONStorage(() => localStorage) },
+    {
+      name: 'beanstalkd-ts-console:servers',
+      storage: createJSONStorage(() => localStorage),
+    },
   ),
 );
