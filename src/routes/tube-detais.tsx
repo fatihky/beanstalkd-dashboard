@@ -135,7 +135,7 @@ function TubeDetails({
         <a
           className={cn(
             buttonVariants({ variant: 'link' }),
-            'flex gap-2 text-sm',
+            'w-fit flex gap-2 text-sm',
           )}
           href="/"
         >
