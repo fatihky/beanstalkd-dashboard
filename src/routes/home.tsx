@@ -55,15 +55,6 @@ export default function HomePage() {
         header: 'Reserved Jobs',
       },
       {
-        id: 'currentJobsBuried',
-        cell: ({ row }) => (
-          <AutoHighlightNumberCell
-            value={row.original.stats.currentJobsBuried}
-          />
-        ),
-        header: 'Buried Jobs',
-      },
-      {
         id: 'currentJobsDelayed',
         cell: ({ row }) => (
           <AutoHighlightNumberCell
@@ -71,6 +62,15 @@ export default function HomePage() {
           />
         ),
         header: 'Delayed Jobs',
+      },
+      {
+        id: 'currentJobsBuried',
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell
+            value={row.original.stats.currentJobsBuried}
+          />
+        ),
+        header: 'Buried Jobs',
       },
       {
         id: 'currentUsing',
