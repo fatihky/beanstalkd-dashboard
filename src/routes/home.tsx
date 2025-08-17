@@ -102,6 +102,13 @@ export default function HomePage() {
         header: 'Consumers',
       },
       {
+        id: 'currentWaiting',
+        cell: ({ row }) => (
+          <AutoHighlightNumberCell value={row.original.stats.currentWaiting} />
+        ),
+        header: 'Consumers Waiting',
+      },
+      {
         id: 'cmdDelete',
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.cmdDelete} />
@@ -114,13 +121,6 @@ export default function HomePage() {
           <AutoHighlightNumberCell value={row.original.stats.cmdPauseTube} />
         ),
         header: 'Pauses',
-      },
-      {
-        id: 'currentWaiting',
-        cell: ({ row }) => (
-          <AutoHighlightNumberCell value={row.original.stats.currentWaiting} />
-        ),
-        header: 'Consumers Waiting',
       },
       {
         id: 'totalJobs',
