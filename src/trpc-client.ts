@@ -6,7 +6,10 @@ import type { AppRouter } from '../server/router';
 export const trpc = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: 'http://localhost:4000/trpc',
+      url:
+        process.env.NODE_ENV === 'production'
+          ? '/trpc' // listen to the
+          : 'http://localhost:4000/trpc',
     }),
   ],
 });

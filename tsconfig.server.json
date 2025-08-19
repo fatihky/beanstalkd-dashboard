@@ -1,8 +1,26 @@
 {
   "compilerOptions": {
-    "alwaysStrict": true,
+    // Base Options recommended for all projects
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "es6",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    // Enable strict type checking so you can catch bugs early
     "strict": true,
-    "noImplicitAny": true,
-    "target": "es2020"
-  }
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    // Transpile our TypeScript code to JavaScript
+    "module": "NodeNext",
+    "outDir": "dist-server",
+    // Emit type declarations
+    "declaration": true,
+    "lib": ["es2022"]
+  },
+  // Include the necessary files for your project
+  "include": ["./server/**/*.ts"],
+  "exclude": ["node_modules"]
 }

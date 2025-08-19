@@ -1,9 +1,9 @@
 import { type JobStats, NotFoundError, type TubeStats } from 'beanstalkd-ts';
 import { container } from 'tsyringe';
 import z from 'zod';
-import type { BeanstalkdServer } from './beanstalkd';
-import injectionTokens from './injection-tokens';
-import { publicProcedure, router } from './trpc';
+import type { BeanstalkdServer } from './beanstalkd.js';
+import injectionTokens from './injection-tokens.js';
+import { publicProcedure, router } from './trpc.js';
 
 export interface TubeWithStats {
   name: string;
@@ -81,7 +81,8 @@ export const appRouter = router({
 
         return tubes.map(
           (tube, i) =>
-            ({ name: tube, stats: tubeStats[i] }) satisfies TubeWithStats,
+            // biome-ignore lint/style/noNonNullAssertion: we fetch stats for each tube above
+            ({ name: tube, stats: tubeStats[i]! }) satisfies TubeWithStats,
         );
       }),
     tubeStats: publicProcedure

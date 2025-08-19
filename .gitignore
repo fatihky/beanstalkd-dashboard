@@ -1,3 +1,6 @@
+# server build output
+dist-server
+
 # Logs
 logs
 *.log
