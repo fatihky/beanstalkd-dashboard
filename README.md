@@ -5,11 +5,27 @@
 
 beanstalkd-dashboard is a monitoring tool for [beanstalkd](https://github.com/beanstalkd/beanstalkd) servers.
 
+## Installation & Usage
 
-### Tech Stack
-- TypeScript
-- [beanstalkd-ts](https://github.com/fatihky/beanstalkd-ts): beanstalkd client with full typescript support. (still in beta)
-- [trpc](https://github.com/trpc/trpc)
+Install:
+```sh
+npm i -g beanstalkd-dashboard
+```
+
+Run and open [http://localhost:3000](http://localhost:3000):
+```sh
+beanstalkd-dashboard # listens on
+```
+
+Listen on specific host/port:
+```sh
+beanstalkd-dashboard --host 0.0.0.0 --port 1234
+```
+
+Connect to multiple servers:
+```sh
+beanstalkd-dashboard --servers localhost:11300,beanstalkd1:11300,beanstalkd2:11300
+```
 
 
 ### Features
@@ -37,3 +53,8 @@ Use `--servers` option to provide multiple beanstalkd server addresses so you ca
 
 #### Show/Hide Table Columns
 <img src="./assets/beanstalkd-dashboard-show-hide-columns.png" style="width: 15em;" />
+
+### Tech Stack
+- TypeScript
+- [beanstalkd-ts](https://github.com/fatihky/beanstalkd-ts): beanstalkd client with full typescript support. (still in beta)
+- [trpc](https://github.com/trpc/trpc)
