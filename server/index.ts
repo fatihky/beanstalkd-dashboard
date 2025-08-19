@@ -13,14 +13,15 @@ import { BeanstalkdServer } from './beanstalkd.js';
 import injectionTokens from './injection-tokens.js';
 import { appRouter } from './router.js';
 
-const host = process.env.HOST ?? '127.0.0.1';
-const port = Number(process.env.PORT ?? '3000');
-
 const optionsSchema = z.object({
+  host: z.string().default('127.0.0.1'),
+  port: z.coerce.number().default(3000),
   servers: z.string().default('localhost:11300'),
 });
 
 const prog = program
+  .option('--host [host]', 'Listen host.', '127.0.0.1')
+  .option('--port [port]', 'Listen port.', '3000')
   .option(
     '--servers <addresses>',
     'Beanstalkd server addresses in format [host:port,...] (comma separated). Example: localhost:11300',
@@ -29,7 +30,7 @@ const prog = program
   .parse(process.argv);
 
 async function main() {
-  const { servers } = optionsSchema.parse(prog.opts());
+  const { host, port, servers } = optionsSchema.parse(prog.opts());
   const app = express();
   const server = createServer(app);
   const bsServers = servers
