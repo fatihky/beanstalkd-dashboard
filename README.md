@@ -49,7 +49,7 @@ Use `--servers` option to provide multiple beanstalkd server addresses so you ca
 
 #### Pause & Resume Tubes and Display Remaining Time to Resume
 
-<video controls src="./assets/beanstalkd-dashboard-pause-resume-tube.mp4"></video>
+<video controls src="https://github.com/fatihky/beanstalkd-dashboard/raw/refs/heads/master/assets/beanstalkd-dashboard-pause-resume-tube.mp4"></video>
 
 #### Show/Hide Table Columns
 <img src="./assets/beanstalkd-dashboard-show-hide-columns.png" style="width: 15em;" />
