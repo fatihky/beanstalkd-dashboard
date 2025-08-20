@@ -9,6 +9,14 @@
     "./dist",
     "./dist-server"
   ],
+  "author": {
+    "name": "Fatih Kaya",
+    "email": "1994274@gmail.com"
+  },
+  "repository": {
+    "url": "https://github.com/fatihky/beanstalkd-dashboard"
+  },
+  "license": "MIT",
   "scripts": {
     "start": "node dist-server/index.js",
     "dev": "vite",
