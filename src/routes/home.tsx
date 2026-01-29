@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   type ColumnDef,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { Check, ListFilter, X } from 'lucide-react';
@@ -33,6 +34,7 @@ export default function HomePage() {
       {
         id: 'name',
         header: 'Tube',
+        accessorFn: (row) => row.name,
         cell: (ctx) => (
           <a
             className={cn(buttonVariants({ variant: 'link' }), 'text-sm')}
@@ -44,6 +46,7 @@ export default function HomePage() {
       },
       {
         id: 'currentJobsUrgent',
+        accessorFn: (row) => row.stats.currentJobsUrgent,
         cell: ({ row }) => (
           <AutoHighlightNumberCell
             value={row.original.stats.currentJobsUrgent}
@@ -53,6 +56,7 @@ export default function HomePage() {
       },
       {
         id: 'currentJobsReady',
+        accessorFn: (row) => row.stats.currentJobsReady,
         cell: ({ row }) => (
           <AutoHighlightNumberCell
             value={row.original.stats.currentJobsReady}
@@ -62,6 +66,7 @@ export default function HomePage() {
       },
       {
         id: 'currentJobsReserved',
+        accessorFn: (row) => row.stats.currentJobsReserved,
         cell: ({ row }) => (
           <AutoHighlightNumberCell
             value={row.original.stats.currentJobsReserved}
@@ -71,6 +76,7 @@ export default function HomePage() {
       },
       {
         id: 'currentJobsDelayed',
+        accessorFn: (row) => row.stats.currentJobsDelayed,
         cell: ({ row }) => (
           <AutoHighlightNumberCell
             value={row.original.stats.currentJobsDelayed}
@@ -80,6 +86,7 @@ export default function HomePage() {
       },
       {
         id: 'currentJobsBuried',
+        accessorFn: (row) => row.stats.currentJobsBuried,
         cell: ({ row }) => (
           <AutoHighlightNumberCell
             value={row.original.stats.currentJobsBuried}
@@ -89,6 +96,7 @@ export default function HomePage() {
       },
       {
         id: 'currentUsing',
+        accessorFn: (row) => row.stats.currentUsing,
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.currentUsing} />
         ),
@@ -96,6 +104,7 @@ export default function HomePage() {
       },
       {
         id: 'currentWatching',
+        accessorFn: (row) => row.stats.currentWatching,
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.currentWatching} />
         ),
@@ -103,6 +112,7 @@ export default function HomePage() {
       },
       {
         id: 'currentWaiting',
+        accessorFn: (row) => row.stats.currentWaiting,
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.currentWaiting} />
         ),
@@ -110,6 +120,7 @@ export default function HomePage() {
       },
       {
         id: 'cmdDelete',
+        accessorFn: (row) => row.stats.cmdDelete,
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.cmdDelete} />
         ),
@@ -117,6 +128,7 @@ export default function HomePage() {
       },
       {
         id: 'cmdPauseTube',
+        accessorFn: (row) => row.stats.cmdPauseTube,
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.cmdPauseTube} />
         ),
@@ -124,6 +136,7 @@ export default function HomePage() {
       },
       {
         id: 'totalJobs',
+        accessorFn: (row) => row.stats.totalJobs,
         cell: ({ row }) => (
           <AutoHighlightNumberCell value={row.original.stats.totalJobs} />
         ),
@@ -132,6 +145,7 @@ export default function HomePage() {
       {
         id: 'actions',
         header: 'Actions',
+        enableSorting: false,
         cell: ({
           row: {
             original: { name, stats },
@@ -154,7 +168,16 @@ export default function HomePage() {
     columns,
     data: result.data ?? [],
     getCoreRowModel: getCoreRowModel(),
-    state: { columnVisibility: prefs.tubeListColumnVisibility },
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: (updater) => {
+      const newSorting =
+        typeof updater === 'function' ? updater(prefs.tubeListSorting) : updater;
+      prefs.setSorting('tubeListSorting', newSorting);
+    },
+    state: {
+      columnVisibility: prefs.tubeListColumnVisibility,
+      sorting: prefs.tubeListSorting,
+    },
   });
 
   useEffect(() => {

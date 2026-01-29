@@ -18,26 +18,36 @@ export function DataTable<RowData>({
             {headerGroup.headers.map((header) => {
               const isSortable = header.column.getCanSort();
               const isSorted = header.column.getIsSorted();
-              const suffix = isSortable ? (
+              const sortIcon = isSortable ? (
                 isSorted === false ? (
                   <ArrowUpDown className="h-4 w-4 opacity-40 group-hover:opacity-70 transition-opacity" />
                 ) : isSorted === 'asc' ? (
-                  <ArrowUp className="h-4 w-4 text-gray-70" />
+                  <ArrowUp className="h-4 w-4" />
                 ) : (
-                  <ArrowDown className="h-4 w-4 text-gray-70" />
+                  <ArrowDown className="h-4 w-4" />
                 )
               ) : null;
 
               return (
                 <Table.Head key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
+                  {header.isPlaceholder ? null : isSortable ? (
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 group cursor-pointer select-none"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-
-                  {suffix}
+                      {sortIcon}
+                    </button>
+                  ) : (
+                    flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )
+                  )}
                 </Table.Head>
               );
             })}
