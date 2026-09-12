@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { Hourglass, Pause, Play, Rocket, Settings, Trash2 } from 'lucide-react';
+import { Hourglass, Pause, Play, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'preact/hooks';
 import { useLocation, useRoute } from 'preact-iso';
 import { hasExtension } from '@/lib/server-capabilities';
@@ -44,10 +44,8 @@ export function TubeActions({
       },
     }),
   );
-  const kickTube = useMutation(trpc.tubes.kick.mutationOptions({ onMutate }));
   const setDlq = useMutation(trpc.tubes.setDlq.mutationOptions({ onMutate }));
   const paused = pause > 0 && pauseTimeLeft > 0;
-  const canKick = hasExtension(capabilities, 'kick-tube');
   const canDlq = hasExtension(capabilities, 'set-dlq');
   const [maxAttempts, setMaxAttempts] = useState(dlqMaxAttempts);
   const [deadTube, setDeadTube] = useState(dlqTube);
@@ -92,17 +90,6 @@ export function TubeActions({
             </section>
           </Dialog.Content>
         </Dialog>
-      )}
-
-      {canKick && (
-        <Button
-          size="icon"
-          disabled={kickTube.isPending}
-          title="Kick buried/delayed jobs back to ready (beanstalkd-pi)"
-          onClick={() => kickTube.mutate({ serverId, tube, bound: 1000 })}
-        >
-          <Rocket className="w-4 h-4" />
-        </Button>
       )}
 
       {canDlq && (

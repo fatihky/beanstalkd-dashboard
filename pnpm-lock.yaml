@@ -12,8 +12,8 @@ importers:
         specifier: ^11.8.1
         version: 11.8.1(typescript@5.9.3)
       beanstalkd-ts:
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: ^0.2.1
+        version: 0.2.1
       commander:
         specifier: ^14.0.2
         version: 14.0.2
@@ -1234,8 +1234,8 @@ packages:
     peerDependencies:
       '@babel/core': ^7.12.10
 
-  beanstalkd-ts@0.1.7:
-    resolution: {integrity: sha512-2s998AiqVXiHl6+ADR+L+8pofNt88orCDwsNIop6lUjTroVrK0a4cwJkutjpkep458ImjpByuFundhRHOH7u0g==}
+  beanstalkd-ts@0.2.1:
+    resolution: {integrity: sha512-Ui+7v4k7LuES4KK14rMtwLSmdaOeGmP32bFsakA7pC12sA3QO9sVGAhp3C2SaYXrgx36Wvo+TL+8jDFdd6gRRQ==}
 
   body-parser@2.2.2:
     resolution: {integrity: sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==}
@@ -2925,7 +2925,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.0
 
-  beanstalkd-ts@0.1.7: {}
+  beanstalkd-ts@0.2.1: {}
 
   body-parser@2.2.2:
     dependencies:
