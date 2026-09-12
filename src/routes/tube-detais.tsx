@@ -13,6 +13,7 @@ import { TubeActions } from '@/components/tubes/tube-actions';
 import { cn } from '@/lib/utils';
 import { useServerStore } from '@/server-store';
 import { useTRPC } from '@/utils/trpc';
+import type { ServerCapabilities } from '../../server/router';
 import { NotFound } from './404';
 
 function TubeStatsCard({
@@ -103,6 +104,19 @@ function TubeStatsCard({
             <AutoHighlightNumberCell value={stats.data?.currentWaiting ?? 0} />
           </Badge>
         </div>
+
+        {/* beanstalkd-pi extension: dead-letter routing, see "set-dlq" */}
+        {stats.data && stats.data.dlqMaxAttempts > 0 && (
+          <div className="flex gap-1">
+            <Badge variant="surface">dead-letter routing</Badge>
+            <Badge>
+              after
+              <AutoHighlightNumberCell value={stats.data.dlqMaxAttempts} />
+              attempts
+            </Badge>
+            <Badge>→ {stats.data.dlqTube}</Badge>
+          </div>
+        )}
       </Card.Content>
     </Card>
   );
@@ -112,10 +126,12 @@ function TubeDetails({
   serverAddress,
   serverId,
   tube,
+  capabilities,
 }: {
   serverAddress: string;
   serverId: number;
   tube: string;
+  capabilities: ServerCapabilities | null;
 }) {
   const trpc = useTRPC();
   const stats = useQuery(
@@ -152,6 +168,9 @@ function TubeDetails({
           tube={tube}
           pause={stats.data?.pause ?? 0}
           pauseTimeLeft={stats.data?.pauseTimeLeft ?? 0}
+          capabilities={capabilities}
+          dlqMaxAttempts={stats.data?.dlqMaxAttempts}
+          dlqTube={stats.data?.dlqTube}
           onMutate={() => {}}
         />
       </div>
@@ -180,6 +199,7 @@ export default function TubeDetailsPage() {
       serverAddress={server.address}
       serverId={Number(serverId)}
       tube={tube}
+      capabilities={server.capabilities}
     />
   );
 }

@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftCircle } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { ArrowLeftCircle, Zap } from 'lucide-react';
 import { useRoute } from 'preact-iso';
 import { AppHeader } from '@/components/app-header';
 import { AutoHighlightNumberCell } from '@/components/auto-highlight-number-cell';
 import { Badge } from '@/components/retroui/Badge';
-import { buttonVariants } from '@/components/retroui/Button';
+import { Button, buttonVariants } from '@/components/retroui/Button';
 import { Card } from '@/components/retroui/Card';
+import { hasExtension } from '@/lib/server-capabilities';
 import { cn } from '@/lib/utils';
 import { useServerStore } from '@/server-store';
 import { useTRPC } from '@/utils/trpc';
@@ -27,12 +28,38 @@ function formatUptime(seconds: number) {
     .join(' ');
 }
 
+function PingButton({ serverId }: { serverId: number }) {
+  const trpc = useTRPC();
+  const ping = useMutation(trpc.servers.ping.mutationOptions());
+
+  return (
+    <Button
+      size="sm"
+      className="flex items-center gap-1"
+      disabled={ping.isPending}
+      onClick={() => ping.mutate({ serverId })}
+    >
+      <Zap className="w-3 h-3" />
+      {ping.isPending
+        ? 'Pinging...'
+        : ping.data
+          ? `pong in ${ping.data.latencyMs.toFixed(1)}ms`
+          : 'Ping'}
+    </Button>
+  );
+}
+
 function ServerStats({ serverId }: { serverId: number }) {
   const trpc = useTRPC();
   const stats = useQuery(
     trpc.servers.stats.queryOptions({ serverId }, { refetchInterval: 1000 }),
   );
+  const server = useServerStore((s) =>
+    s.servers.find((srv) => srv.id === serverId),
+  );
   const data = stats.data;
+  const canPing = hasExtension(server?.capabilities, 'ping');
+  const isBeanstalkdPi = Boolean(server?.capabilities);
 
   return (
     <div className="p-3">
@@ -52,6 +79,7 @@ function ServerStats({ serverId }: { serverId: number }) {
 
       <div className="flex items-center justify-between pb-2 text-lg font-bold my-3 border-b-4 border-primary/60">
         <span>Server Stats</span>
+        {canPing && <PingButton serverId={serverId} />}
       </div>
 
       <Card className="w-full">
@@ -78,9 +106,7 @@ function ServerStats({ serverId }: { serverId: number }) {
             </Badge>
             <Badge>
               reserved
-              <AutoHighlightNumberCell
-                value={data?.currentJobsReserved ?? 0}
-              />
+              <AutoHighlightNumberCell value={data?.currentJobsReserved ?? 0} />
             </Badge>
             <Badge>
               delayed
@@ -174,9 +200,7 @@ function ServerStats({ serverId }: { serverId: number }) {
             <Badge variant="solid">binlog</Badge>
             <Badge>
               current index
-              <AutoHighlightNumberCell
-                value={data?.binlogCurrentIndex ?? 0}
-              />
+              <AutoHighlightNumberCell value={data?.binlogCurrentIndex ?? 0} />
             </Badge>
             <Badge>
               oldest index
@@ -199,6 +223,37 @@ function ServerStats({ serverId }: { serverId: number }) {
               />
             </Badge>
           </div>
+
+          {isBeanstalkdPi && (
+            <div className="flex flex-wrap gap-1">
+              <Badge variant="surface">beanstalkd-pi</Badge>
+              <Badge>version {server?.capabilities?.version ?? '-'}</Badge>
+              <Badge>
+                dead-lettered
+                <AutoHighlightNumberCell value={data?.jobDeadLettered ?? 0} />
+              </Badge>
+              <Badge>
+                put-at
+                <AutoHighlightNumberCell value={data?.cmdPutAt ?? 0} />
+              </Badge>
+              <Badge>
+                kick-tube
+                <AutoHighlightNumberCell value={data?.cmdKickTube ?? 0} />
+              </Badge>
+              <Badge>
+                delete-tube
+                <AutoHighlightNumberCell value={data?.cmdDeleteTube ?? 0} />
+              </Badge>
+              <Badge>
+                peek-tube
+                <AutoHighlightNumberCell value={data?.cmdPeekTube ?? 0} />
+              </Badge>
+              <Badge>
+                set-dlq
+                <AutoHighlightNumberCell value={data?.cmdSetDlq ?? 0} />
+              </Badge>
+            </div>
+          )}
         </Card.Content>
       </Card>
     </div>

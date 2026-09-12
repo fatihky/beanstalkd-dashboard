@@ -38,6 +38,7 @@ async function main() {
     .map((address, i) => new BeanstalkdServer(i + 1, address));
 
   await Promise.all(bsServers.map((server) => server.bsClient.connect()));
+  await Promise.all(bsServers.map((server) => server.detectCapabilities()));
 
   container.registerInstance(injectionTokens.beanstalkdServers, bsServers);
 

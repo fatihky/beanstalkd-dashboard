@@ -54,6 +54,20 @@ https://github.com/user-attachments/assets/af40b3d4-7da4-4855-a2bb-410df8d54209
 #### Show/Hide Table Columns
 <img src="./assets/beanstalkd-dashboard-show-hide-columns.png" style="width: 15em;" />
 
+#### [beanstalkd-pi](https://github.com/fatihky/beanstalkd-pi) support
+
+Connecting to a [beanstalkd-pi](https://github.com/fatihky/beanstalkd-pi) server (a wire-compatible
+beanstalkd reimplementation with a few extra commands) unlocks extra UI, automatically detected per
+server via its "capabilities" command — nothing to configure. Against stock beanstalkd, none of
+this appears and everything behaves exactly as before:
+
+- **Kick** and **dead-letter routing** (`set-dlq`) actions on each tube, alongside the usual
+  pause/clear.
+- A **Connections** page (linked from the header) listing every connection to the server, the
+  tube it uses/watches, and its reserved jobs — beanstalkd has no other way to inspect this.
+- A **Ping** button on the server stats page, showing round-trip latency.
+- Clearing a tube purges it in one round trip (`delete-tube`) instead of peek+delete-ing every job.
+
 ### Tech Stack
 - TypeScript
 - [beanstalkd-ts](https://github.com/fatihky/beanstalkd-ts): beanstalkd client with full typescript support. (still in beta)

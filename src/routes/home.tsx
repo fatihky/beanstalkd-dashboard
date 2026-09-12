@@ -11,20 +11,21 @@ import { AppHeader } from '@/components/app-header';
 import { Button, buttonVariants } from '@/components/retroui/Button';
 import { Menu } from '@/components/retroui/Menu';
 import { TubeActions } from '@/components/tubes/tube-actions';
+import { cn } from '@/lib/utils';
 import { usePreferencesStore } from '@/preferences-store';
 import { useServerStore } from '@/server-store';
 import type { TubeWithStats } from '../../server/router';
 import { AutoHighlightNumberCell } from '../components/auto-highlight-number-cell';
 import { DataTable } from '../components/datatable';
 import { useTRPC } from '../utils/trpc';
-import { cn } from '@/lib/utils';
 
 export default function HomePage() {
   const trpc = useTRPC();
   const serverStore = useServerStore();
   const serverId = serverStore.selectedServerId;
-  const serverAddress =
-    serverStore.servers.find((s) => s.id === serverId)?.address ?? '-';
+  const selectedServer = serverStore.servers.find((s) => s.id === serverId);
+  const serverAddress = selectedServer?.address ?? '-';
+  const capabilities = selectedServer?.capabilities ?? null;
   const result = useQuery(
     trpc.tubes.list.queryOptions({ serverId }, { refetchInterval: 400 }),
   );
@@ -157,12 +158,15 @@ export default function HomePage() {
             tube={name}
             pause={stats.pause}
             pauseTimeLeft={stats.pauseTimeLeft}
+            capabilities={capabilities}
+            dlqMaxAttempts={stats.dlqMaxAttempts}
+            dlqTube={stats.dlqTube}
             onMutate={result.refetch}
           />
         ),
       },
     ],
-    [result.refetch, serverAddress, serverId],
+    [result.refetch, serverAddress, serverId, capabilities],
   );
   const table = useReactTable<TubeWithStats>({
     columns,
@@ -171,7 +175,9 @@ export default function HomePage() {
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: (updater) => {
       const newSorting =
-        typeof updater === 'function' ? updater(prefs.tubeListSorting) : updater;
+        typeof updater === 'function'
+          ? updater(prefs.tubeListSorting)
+          : updater;
       prefs.setSorting('tubeListSorting', newSorting);
     },
     state: {

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary, LocationProvider, Route, Router } from 'preact-iso';
 import { AppProvider } from './app-provider';
 import { NotFound } from './routes/404';
+import ConnectionsPage from './routes/connections';
 import HomePage from './routes/home';
 import ServerStatsPage from './routes/server-stats';
 import TubeDetailsPage from './routes/tube-detais';
@@ -34,6 +35,10 @@ export function App() {
                 <Route
                   path="/servers/:serverId/tubes/:tube"
                   component={TubeDetailsPage}
+                />
+                <Route
+                  path="/servers/:serverId/connections"
+                  component={ConnectionsPage}
                 />
                 <Route default component={NotFound} />
               </Router>

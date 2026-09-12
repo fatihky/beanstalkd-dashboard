@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import type { ServerSummary } from '../server/router';
 
-interface BeanstalkdServerMeta {
-  id: number;
-  address: string;
-}
+type BeanstalkdServerMeta = ServerSummary;
 
 export const useServerStore = create(
   persist<{

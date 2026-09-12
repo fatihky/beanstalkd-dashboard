@@ -1,7 +1,7 @@
 {
   "name": "beanstalkd-dashboard",
   "private": false,
-  "version": "0.1.7",
+  "version": "0.1.8",
   "type": "module",
   "bin": "./bin/cli.js",
   "files": [
@@ -31,7 +31,7 @@
     "commander": "^14.0.2",
     "cors": "^2.8.6",
     "reflect-metadata": "^0.2.2",
-    "beanstalkd-ts": "^0.1.7",
+    "beanstalkd-ts": "^0.1.10",
     "express": "^5.2.1",
     "zod": "^4.3.6",
     "tsyringe": "^4.10.0",

@@ -1,10 +1,11 @@
-import { Activity } from 'lucide-react';
+import { Activity, Network } from 'lucide-react';
 import { useId } from 'preact/hooks';
+import { useLocation, useRoute } from 'preact-iso';
+import { hasExtension } from '@/lib/server-capabilities';
 import { useServerStore } from '@/server-store';
 import { buttonVariants } from './retroui/Button';
 import { Label } from './retroui/Label';
 import { Select } from './retroui/Select';
-import { useLocation, useRoute } from 'preact-iso';
 
 export function AppHeader() {
   const serverStore = useServerStore();
@@ -63,6 +64,16 @@ export function AppHeader() {
             <Activity className="w-4 h-4" />
           </a>
         )}
+        {selectedServer &&
+          hasExtension(selectedServer.capabilities, 'list-connections') && (
+            <a
+              className={buttonVariants({ variant: 'outline', size: 'icon' })}
+              href={`/servers/${selectedServer.id}/connections`}
+              title="Connections (beanstalkd-pi)"
+            >
+              <Network className="w-4 h-4" />
+            </a>
+          )}
       </div>
     </div>
   );

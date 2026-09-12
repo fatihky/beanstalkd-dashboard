@@ -1,4 +1,10 @@
-import { type JobStats, NotFoundError, type TubeStats } from 'beanstalkd-ts';
+import {
+  type BeanstalkdExtension,
+  type ConnectionStats,
+  type JobStats,
+  NotFoundError,
+  type TubeStats,
+} from 'beanstalkd-ts';
 import { container } from 'tsyringe';
 import z from 'zod';
 import type { BeanstalkdServer } from './beanstalkd.js';
@@ -15,6 +21,21 @@ export interface JobWitStats {
   stats: JobStats;
 }
 
+/** plain, JSON-serializable shape of `BeanstalkdServer.capabilities` */
+export interface ServerCapabilities {
+  version: string;
+  maxJobSize: number;
+  maxTubeNameLen: number;
+  extensions: BeanstalkdExtension[];
+}
+
+export interface ServerSummary {
+  id: number;
+  address: string;
+  /** what this server supports beyond stock beanstalkd, or `null` against a server without "capabilities" (e.g. stock beanstalkd) */
+  capabilities: ServerCapabilities | null;
+}
+
 function servers() {
   return container.resolve(injectionTokens.beanstalkdServers);
 }
@@ -27,15 +48,60 @@ function getServer(id: number) {
   return server;
 }
 
+function hasExtension(
+  server: BeanstalkdServer,
+  extension: BeanstalkdExtension,
+): boolean {
+  return server.capabilities?.extensions.includes(extension) ?? false;
+}
+
+function toServerSummary(server: BeanstalkdServer): ServerSummary {
+  return {
+    id: server.id,
+    address: server.address,
+    capabilities: server.capabilities
+      ? {
+          version: server.capabilities.version,
+          maxJobSize: server.capabilities.maxJobSize,
+          maxTubeNameLen: server.capabilities.maxTubeNameLen,
+          extensions: server.capabilities.extensions,
+        }
+      : null,
+  };
+}
+
 export const appRouter = router({
   servers: {
-    list: publicProcedure.query(async () => servers()),
+    list: publicProcedure.query(
+      async (): Promise<ServerSummary[]> => servers().map(toServerSummary),
+    ),
     stats: publicProcedure
       .input(z.object({ serverId: z.int() }))
       .query(async (opts) => {
         const server = getServer(opts.input.serverId);
 
         return await server.bsClient.stats();
+      }),
+    // beanstalkd-pi extension: a bare liveness check, timed round-trip.
+    ping: publicProcedure
+      .input(z.object({ serverId: z.int() }))
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+        const start = performance.now();
+
+        await server.bsClient.ping();
+
+        return { latencyMs: performance.now() - start };
+      }),
+  },
+  // beanstalkd-pi extension: per-connection introspection, with no stock equivalent at all.
+  connections: {
+    list: publicProcedure
+      .input(z.object({ serverId: z.int() }))
+      .query(async (opts): Promise<ConnectionStats[]> => {
+        const server = getServer(opts.input.serverId);
+
+        return await server.bsClient.listConnections();
       }),
   },
   jobs: {
@@ -58,6 +124,15 @@ export const appRouter = router({
       .input(z.object({ serverId: z.int(), tube: z.string() }))
       .mutation(async (opts) => {
         const server = getServer(opts.input.serverId);
+
+        // beanstalkd-pi extension: purge the tube in one round trip instead
+        // of peek+delete-ing every job ourselves.
+        if (hasExtension(server, 'delete-tube')) {
+          await server.bsClient.deleteTube(opts.input.tube);
+
+          return 'ok';
+        }
+
         const states = ['buried', 'delayed', 'ready'] as const;
 
         await server.bsClient.use(opts.input.tube);
@@ -73,6 +148,39 @@ export const appRouter = router({
         }
 
         await server.bsClient.use('default');
+
+        return 'ok';
+      }),
+    // beanstalkd-pi extension: "kick" a named tube directly, without a use()/use('default') round trip.
+    kick: publicProcedure
+      .input(z.object({ serverId: z.int(), tube: z.string(), bound: z.int() }))
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+        const result = await server.bsClient.kickTube(
+          opts.input.tube,
+          opts.input.bound,
+        );
+
+        return { kicked: result.jobCount };
+      }),
+    // beanstalkd-pi extension: configure automatic dead-letter routing for a tube.
+    setDlq: publicProcedure
+      .input(
+        z.object({
+          serverId: z.int(),
+          tube: z.string(),
+          maxAttempts: z.int().min(0),
+          deadTube: z.string(),
+        }),
+      )
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+
+        await server.bsClient.setDlq(
+          opts.input.tube,
+          opts.input.maxAttempts,
+          opts.input.deadTube,
+        );
 
         return 'ok';
       }),
