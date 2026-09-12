@@ -30,11 +30,28 @@ function getServer(id: number) {
 export const appRouter = router({
   servers: {
     list: publicProcedure.query(async () => servers()),
+    stats: publicProcedure
+      .input(z.object({ serverId: z.int() }))
+      .query(async (opts) => {
+        const server = getServer(opts.input.serverId);
+
+        return await server.bsClient.stats();
+      }),
   },
   jobs: {
     peekBuried: jobStatsProcedure('buried'),
     peekDelayed: jobStatsProcedure('delayed'),
     peekReady: jobStatsProcedure('ready'),
+    deleteBuried: publicProcedure
+      .input(z.object({ serverId: z.int(), tube: z.string(), jobId: z.int() }))
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+
+        await server.bsClient.use(opts.input.tube);
+        await server.bsClient.deleteJob(opts.input.jobId);
+
+        return 'ok';
+      }),
   },
   tubes: {
     clear: publicProcedure

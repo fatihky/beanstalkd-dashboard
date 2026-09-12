@@ -1,5 +1,7 @@
+import { Activity } from 'lucide-react';
 import { useId } from 'preact/hooks';
 import { useServerStore } from '@/server-store';
+import { buttonVariants } from './retroui/Button';
 import { Label } from './retroui/Label';
 import { Select } from './retroui/Select';
 import { useLocation, useRoute } from 'preact-iso';
@@ -52,6 +54,15 @@ export function AppHeader() {
             </Select.Group>
           </Select.Content>
         </Select>
+        {selectedServer && (
+          <a
+            className={buttonVariants({ variant: 'outline', size: 'icon' })}
+            href={`/servers/${selectedServer.id}/stats`}
+            title="Server stats"
+          >
+            <Activity className="w-4 h-4" />
+          </a>
+        )}
       </div>
     </div>
   );

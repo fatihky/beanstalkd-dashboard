@@ -15,13 +15,13 @@ import { appRouter } from './router.js';
 
 const optionsSchema = z.object({
   host: z.string().default('127.0.0.1'),
-  port: z.coerce.number().default(3000),
+  port: z.coerce.number().default(4000),
   servers: z.string().default('localhost:11300'),
 });
 
 const prog = program
   .option('--host [host]', 'Listen host.', '127.0.0.1')
-  .option('--port [port]', 'Listen port.', '3000')
+  .option('--port [port]', 'Listen port.', '4000')
   .option(
     '--servers <addresses>',
     'Beanstalkd server addresses in format [host:port,...] (comma separated). Example: localhost:11300',

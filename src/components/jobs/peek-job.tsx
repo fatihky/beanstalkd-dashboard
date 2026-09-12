@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { RefreshCw } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { Accordion } from '@/components/retroui/Accordion';
 import { Alert } from '@/components/retroui/Alert';
 import { Badge } from '@/components/retroui/Badge';
 import { Button } from '@/components/retroui/Button';
 import { Card } from '@/components/retroui/Card';
+import { Dialog } from '@/components/retroui/Dialog';
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/utils/trpc';
 
@@ -30,6 +31,11 @@ export function PeekJob({
       tube,
     }),
   );
+  const deleteBuried = useMutation(
+    trpc.jobs.deleteBuried.mutationOptions({
+      onSuccess: () => result.refetch(),
+    }),
+  );
 
   return (
     <Card className="flex-1">
@@ -38,7 +44,46 @@ export function PeekJob({
           <div>
             Next job in <Badge>{state}</Badge> state
           </div>
-          <div>
+          <div className="flex gap-1">
+            {state === 'buried' && result.data && (
+              <Dialog>
+                <Dialog.Trigger>
+                  <Button size="icon" variant="danger">
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </Dialog.Trigger>
+                <Dialog.Content>
+                  <Dialog.Header className="bg-red-500 text-white font-bold">
+                    Are you sure want to delete job?
+                  </Dialog.Header>
+                  <section className="flex flex-col p-3">
+                    <section className="mb-3">
+                      Job <Badge>{result.data.job.id}</Badge> will be{' '}
+                      <span className="font-bold">DELETED</span>.
+                    </section>
+
+                    <section className="flex w-full justify-end">
+                      <Dialog.Trigger asChild>
+                        <Button
+                          variant="danger"
+                          disabled={deleteBuried.isPending}
+                          onClick={() =>
+                            result.data &&
+                            deleteBuried.mutate({
+                              serverId,
+                              tube,
+                              jobId: result.data.job.id,
+                            })
+                          }
+                        >
+                          Confirm
+                        </Button>
+                      </Dialog.Trigger>
+                    </section>
+                  </section>
+                </Dialog.Content>
+              </Dialog>
+            )}
             <Button size="icon" onClick={() => result.refetch()}>
               <RefreshCw
                 className={cn('w-3 h-3', result.isRefetching && 'animate-spin')}
