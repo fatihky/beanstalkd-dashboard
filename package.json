@@ -25,10 +25,12 @@
     "build:server": "tsc -p tsconfig.server.json",
     "build:ui": "tsc -b && vite build",
     "preview": "vite preview",
+    "traffic": "bun scripts/traffic.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@trpc/server": "^11.8.1",
+    "@types/node": "^26.6.3",
     "beanstalkd-ts": "^0.3.0",
     "commander": "^14.0.2",
     "cors": "^2.8.6",

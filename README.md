@@ -73,6 +73,15 @@ this appears and everything behaves exactly as before:
 - The tube list loads every tube's stats in one round trip (`stats-tube-all`) instead of
   list-tubes + one stats-tube per tube.
 
+### Development
+
+Generate some lightweight demo traffic (producers + workers on a few `demo-*` tubes) so the
+dashboard has something to show:
+```sh
+pnpm traffic                                            # localhost:11300, 3 tubes, ~5 jobs/s, jobs wait ~30s
+pnpm traffic --server localhost:11301 --tubes 5 --rate 20 --workers 2 --hold 60
+```
+
 ### Tech Stack
 - TypeScript
 - [beanstalkd-ts](https://github.com/fatihky/beanstalkd-ts): beanstalkd client with full typescript support. (still in beta)
