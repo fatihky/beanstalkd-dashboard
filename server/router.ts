@@ -1,6 +1,7 @@
 import {
   type BeanstalkdExtension,
   type ConnectionStats,
+  type JobListEntry,
   type JobStats,
   NotFoundError,
   type TubeStats,
@@ -93,6 +94,19 @@ export const appRouter = router({
 
         return { latencyMs: performance.now() - start };
       }),
+    // beanstalkd-pi extension: toggle drain mode (reject new puts) or just report it.
+    drain: publicProcedure
+      .input(
+        z.object({
+          serverId: z.int(),
+          action: z.enum(['on', 'off', 'status']),
+        }),
+      )
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+
+        return { draining: await server.bsClient.drain(opts.input.action) };
+      }),
   },
   // beanstalkd-pi extension: per-connection introspection, with no stock equivalent at all.
   connections: {
@@ -108,12 +122,65 @@ export const appRouter = router({
     peekBuried: jobStatsProcedure('buried'),
     peekDelayed: jobStatsProcedure('delayed'),
     peekReady: jobStatsProcedure('ready'),
+    // beanstalkd-pi extension: a bounded, non-destructive listing of a tube's jobs (no bodies).
+    list: publicProcedure
+      .input(
+        z.object({
+          serverId: z.int(),
+          tube: z.string(),
+          state: z.enum(['buried', 'delayed', 'ready']),
+          limit: z.int().min(1).max(10000).optional(),
+        }),
+      )
+      .query(async (opts): Promise<JobListEntry[]> => {
+        const server = getServer(opts.input.serverId);
+        const { tube, state, limit } = opts.input;
+
+        try {
+          return await server.bsClient.listJobs(tube, state, limit);
+        } catch (err) {
+          // the tube disappears once it has no jobs and no watchers
+          if (err instanceof NotFoundError) return [];
+
+          throw err; // rethrow
+        }
+      }),
+    // fetch a single job's body and stats by id, e.g. after picking one from `jobs.list`
+    get: publicProcedure
+      .input(z.object({ serverId: z.int(), jobId: z.int() }))
+      .query(async (opts): Promise<JobWitStats | null> => {
+        const server = getServer(opts.input.serverId);
+
+        try {
+          const job = await server.bsClient.peek(opts.input.jobId);
+          const stats = await server.bsClient.statsJob(job.jobId);
+
+          return {
+            job: { id: job.jobId, payload: job.payload.toString() },
+            stats,
+          };
+        } catch (err) {
+          if (err instanceof NotFoundError) return null;
+
+          throw err; // rethrow
+        }
+      }),
     deleteBuried: publicProcedure
       .input(z.object({ serverId: z.int(), tube: z.string(), jobId: z.int() }))
       .mutation(async (opts) => {
         const server = getServer(opts.input.serverId);
 
         await server.bsClient.use(opts.input.tube);
+        await server.bsClient.deleteJob(opts.input.jobId);
+
+        return 'ok';
+      }),
+    // delete any job (ready, delayed or buried) by id
+    delete: publicProcedure
+      .input(z.object({ serverId: z.int(), jobId: z.int() }))
+      .mutation(async (opts) => {
+        const server = getServer(opts.input.serverId);
+
         await server.bsClient.deleteJob(opts.input.jobId);
 
         return 'ok';
@@ -199,6 +266,17 @@ export const appRouter = router({
       .input(z.object({ serverId: z.int() }))
       .query(async (opts) => {
         const server = getServer(opts.input.serverId);
+
+        // beanstalkd-pi extension: every tube's stats in one round trip
+        // instead of list-tubes + N x stats-tube.
+        if (hasExtension(server, 'stats-tube-all')) {
+          const allStats = await server.bsClient.statsTubeAll();
+
+          return allStats.map(
+            (stats) => ({ name: stats.name, stats }) satisfies TubeWithStats,
+          );
+        }
+
         const tubes = await server.bsClient.listTubes();
         const tubeStats = await Promise.all(
           tubes.map((tube) => server.bsClient.statsTube(tube)),

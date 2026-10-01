@@ -4,12 +4,14 @@ import { ArrowLeftCircle, Info } from 'lucide-react';
 import { useRoute } from 'preact-iso';
 import { AppHeader } from '@/components/app-header';
 import { AutoHighlightNumberCell } from '@/components/auto-highlight-number-cell';
+import { JobList } from '@/components/jobs/job-list';
 import { PeekJob } from '@/components/jobs/peek-job';
 import { Alert } from '@/components/retroui/Alert';
 import { Badge } from '@/components/retroui/Badge';
 import { buttonVariants } from '@/components/retroui/Button';
 import { Card } from '@/components/retroui/Card';
 import { TubeActions } from '@/components/tubes/tube-actions';
+import { hasExtension } from '@/lib/server-capabilities';
 import { cn } from '@/lib/utils';
 import { useServerStore } from '@/server-store';
 import { useTRPC } from '@/utils/trpc';
@@ -182,6 +184,10 @@ function TubeDetails({
         <PeekJob serverId={Number(serverId)} state="delayed" tube={tube} />
         <PeekJob serverId={Number(serverId)} state="buried" tube={tube} />
       </div>
+
+      {hasExtension(capabilities, 'list-jobs') && (
+        <JobList serverId={serverId} tube={tube} />
+      )}
     </div>
   );
 }

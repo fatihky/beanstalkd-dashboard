@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ArrowLeftCircle, Zap } from 'lucide-react';
+import { ArrowLeftCircle, Ban, CirclePlay, Zap } from 'lucide-react';
 import { useRoute } from 'preact-iso';
 import { AppHeader } from '@/components/app-header';
 import { AutoHighlightNumberCell } from '@/components/auto-highlight-number-cell';
+import { Alert } from '@/components/retroui/Alert';
 import { Badge } from '@/components/retroui/Badge';
 import { Button, buttonVariants } from '@/components/retroui/Button';
 import { Card } from '@/components/retroui/Card';
@@ -49,6 +50,46 @@ function PingButton({ serverId }: { serverId: number }) {
   );
 }
 
+// beanstalkd-pi extension: drain mode rejects new puts while every other command keeps working.
+function DrainButton({
+  serverId,
+  draining,
+  onMutate,
+}: {
+  serverId: number;
+  draining: boolean;
+  onMutate: () => void;
+}) {
+  const trpc = useTRPC();
+  const drain = useMutation(
+    trpc.servers.drain.mutationOptions({ onSuccess: onMutate }),
+  );
+
+  return (
+    <Button
+      size="sm"
+      variant={draining ? 'default' : 'danger'}
+      className="flex items-center gap-1"
+      disabled={drain.isPending}
+      title={
+        draining
+          ? 'Accept new jobs again'
+          : 'Reject new jobs (put / put-at); everything else keeps working'
+      }
+      onClick={() =>
+        drain.mutate({ serverId, action: draining ? 'off' : 'on' })
+      }
+    >
+      {draining ? (
+        <CirclePlay className="w-3 h-3" />
+      ) : (
+        <Ban className="w-3 h-3" />
+      )}
+      {drain.isPending ? '...' : draining ? 'Stop draining' : 'Drain'}
+    </Button>
+  );
+}
+
 function ServerStats({ serverId }: { serverId: number }) {
   const trpc = useTRPC();
   const stats = useQuery(
@@ -59,6 +100,8 @@ function ServerStats({ serverId }: { serverId: number }) {
   );
   const data = stats.data;
   const canPing = hasExtension(server?.capabilities, 'ping');
+  const canDrain = hasExtension(server?.capabilities, 'drain');
+  const draining = data?.draining === 'true';
   const isBeanstalkdPi = Boolean(server?.capabilities);
 
   return (
@@ -79,8 +122,23 @@ function ServerStats({ serverId }: { serverId: number }) {
 
       <div className="flex items-center justify-between pb-2 text-lg font-bold my-3 border-b-4 border-primary/60">
         <span>Server Stats</span>
-        {canPing && <PingButton serverId={serverId} />}
+        <div className="flex items-center gap-2">
+          {canDrain && data && (
+            <DrainButton
+              serverId={serverId}
+              draining={draining}
+              onMutate={stats.refetch}
+            />
+          )}
+          {canPing && <PingButton serverId={serverId} />}
+        </div>
       </div>
+
+      {draining && (
+        <Alert className="mb-3">
+          Server is draining: new jobs (put / put-at) are rejected.
+        </Alert>
+      )}
 
       <Card className="w-full">
         <Card.Content className="flex flex-col gap-2">
@@ -92,6 +150,7 @@ function ServerStats({ serverId }: { serverId: number }) {
             <Badge>os {data?.os ?? '-'}</Badge>
             <Badge>platform {data?.platform ?? '-'}</Badge>
             <Badge>uptime {data ? formatUptime(data.uptime) : '-'}</Badge>
+            <Badge>draining {data?.draining ?? '-'}</Badge>
           </div>
 
           <div className="flex flex-wrap gap-1">
@@ -249,8 +308,36 @@ function ServerStats({ serverId }: { serverId: number }) {
                 <AutoHighlightNumberCell value={data?.cmdPeekTube ?? 0} />
               </Badge>
               <Badge>
+                list-jobs
+                <AutoHighlightNumberCell value={data?.cmdListJobs ?? 0} />
+              </Badge>
+              <Badge>
+                list-tubes-paused
+                <AutoHighlightNumberCell
+                  value={data?.cmdListTubesPaused ?? 0}
+                />
+              </Badge>
+              <Badge>
+                stats-tube-all
+                <AutoHighlightNumberCell value={data?.cmdStatsTubeAll ?? 0} />
+              </Badge>
+              <Badge>
+                stats-conn
+                <AutoHighlightNumberCell value={data?.cmdStatsConn ?? 0} />
+              </Badge>
+              <Badge>
+                list-connections
+                <AutoHighlightNumberCell
+                  value={data?.cmdListConnections ?? 0}
+                />
+              </Badge>
+              <Badge>
                 set-dlq
                 <AutoHighlightNumberCell value={data?.cmdSetDlq ?? 0} />
+              </Badge>
+              <Badge>
+                drain
+                <AutoHighlightNumberCell value={data?.cmdDrain ?? 0} />
               </Badge>
             </div>
           )}

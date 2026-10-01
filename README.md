@@ -61,12 +61,17 @@ beanstalkd reimplementation with a few extra commands) unlocks extra UI, automat
 server via its "capabilities" command — nothing to configure. Against stock beanstalkd, none of
 this appears and everything behaves exactly as before:
 
-- **Kick** and **dead-letter routing** (`set-dlq`) actions on each tube, alongside the usual
-  pause/clear.
+- A **dead-letter routing** (`set-dlq`) action on each tube, alongside the usual pause/clear.
 - A **Connections** page (linked from the header) listing every connection to the server, the
   tube it uses/watches, and its reserved jobs — beanstalkd has no other way to inspect this.
 - A **Ping** button on the server stats page, showing round-trip latency.
 - Clearing a tube purges it in one round trip (`delete-tube`) instead of peek+delete-ing every job.
+- A **job browser** on the tube details page (`list-jobs`): list a tube's ready, delayed or buried
+  jobs (not just the next one), then click a job to see its body and stats, or delete it.
+- A **Drain** toggle on the server stats page (`drain`): reject new jobs while workers keep
+  processing the existing ones.
+- The tube list loads every tube's stats in one round trip (`stats-tube-all`) instead of
+  list-tubes + one stats-tube per tube.
 
 ### Tech Stack
 - TypeScript
