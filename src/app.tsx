@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import { ErrorBoundary, LocationProvider, Route, Router } from 'preact-iso';
 import { AppProvider } from './app-provider';
 import { NotFound } from './routes/404';
@@ -21,31 +22,34 @@ const queryClient = new QueryClient({
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TRPCProvider queryClient={queryClient} trpcClient={trpc}>
-        <LocationProvider>
-          <ErrorBoundary>
-            <AppProvider>
-              <Router>
-                <Route path="/" component={HomePage} />
-                <Route
-                  path="/servers/:serverId/stats"
-                  component={ServerStatsPage}
-                />
-                <Route
-                  path="/servers/:serverId/tubes/:tube"
-                  component={TubeDetailsPage}
-                />
-                <Route
-                  path="/servers/:serverId/connections"
-                  component={ConnectionsPage}
-                />
-                <Route default component={NotFound} />
-              </Router>
-            </AppProvider>
-          </ErrorBoundary>
-        </LocationProvider>
-      </TRPCProvider>
-    </QueryClientProvider>
+    <>
+      <QueryClientProvider client={queryClient}>
+        <TRPCProvider queryClient={queryClient} trpcClient={trpc}>
+          <LocationProvider>
+            <ErrorBoundary>
+              <AppProvider>
+                <Router>
+                  <Route path="/" component={HomePage} />
+                  <Route
+                    path="/servers/:serverId/stats"
+                    component={ServerStatsPage}
+                  />
+                  <Route
+                    path="/servers/:serverId/tubes/:tube"
+                    component={TubeDetailsPage}
+                  />
+                  <Route
+                    path="/servers/:serverId/connections"
+                    component={ConnectionsPage}
+                  />
+                  <Route default component={NotFound} />
+                </Router>
+              </AppProvider>
+            </ErrorBoundary>
+          </LocationProvider>
+        </TRPCProvider>
+      </QueryClientProvider>
+      <Toaster position="top-right" richColors />
+    </>
   );
 }

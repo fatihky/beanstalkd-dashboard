@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server';
 import {
   type BeanstalkdExtension,
   type ConnectionStats,
@@ -181,7 +182,25 @@ export const appRouter = router({
       .mutation(async (opts) => {
         const server = getServer(opts.input.serverId);
 
-        await server.bsClient.deleteJob(opts.input.jobId);
+        try {
+          await server.bsClient.deleteJob(opts.input.jobId);
+        } catch (err) {
+          if (!(err instanceof NotFoundError)) throw err; // rethrow
+
+          // beanstalkd answers NOT_FOUND both for a missing job and for one
+          // reserved by another connection (e.g. a worker grabbed it).
+          const stats = await server.bsClient
+            .statsJob(opts.input.jobId)
+            .catch(() => null);
+
+          // already gone (processed by a worker), nothing left to delete
+          if (!stats) return 'ok';
+
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: `job is ${stats.state} by another connection and can't be deleted until it is released, buried or deleted there`,
+          });
+        }
 
         return 'ok';
       }),

@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { useState } from 'preact/hooks';
+import { toast } from 'sonner';
 import { Alert } from '@/components/retroui/Alert';
 import { Badge } from '@/components/retroui/Badge';
 import { Button } from '@/components/retroui/Button';
@@ -14,21 +15,30 @@ type JobState = 'buried' | 'delayed' | 'ready';
 
 const states: JobState[] = ['ready', 'delayed', 'buried'];
 const limits = [50, 100, 500, 1000];
+const removeAnimationMs = 300; // keep in sync with the row's duration-300
+
+function withId(ids: ReadonlySet<number>, id: number) {
+  return new Set(ids).add(id);
+}
+
+function withoutId(ids: ReadonlySet<number>, id: number) {
+  const next = new Set(ids);
+  next.delete(id);
+  return next;
+}
 
 function JobDetails({
   serverId,
   jobId,
-  onDeleted,
+  onDelete,
 }: {
   serverId: number;
   jobId: number;
-  onDeleted: () => void;
+  onDelete: (jobId: number) => void;
 }) {
   const trpc = useTRPC();
   const result = useQuery(trpc.jobs.get.queryOptions({ serverId, jobId }));
-  const deleteJob = useMutation(
-    trpc.jobs.delete.mutationOptions({ onSuccess: onDeleted }),
-  );
+  const [confirming, setConfirming] = useState(false);
 
   if (result.isPending) return <section className="p-3">Loading...</section>;
 
@@ -59,18 +69,31 @@ function JobDetails({
         <Badge>kicks: {stats.kicks}</Badge>
       </div>
 
-      <section className="flex w-full justify-end">
-        <Button
-          variant="danger"
-          className="flex items-center gap-1"
-          disabled={deleteJob.isPending}
-          onClick={() => deleteJob.mutate({ serverId, jobId: job.id })}
-        >
-          <Trash2 className="w-4 h-4" />
-          {deleteJob.isPending ? 'Deleting...' : 'Delete job'}
-        </Button>
-      </section>
-      {deleteJob.isError && <Alert>{deleteJob.error.message}</Alert>}
+      {confirming ? (
+        <section className="flex flex-wrap items-center justify-end gap-2">
+          <span className="mr-auto">
+            Job <Badge>{job.id}</Badge> will be{' '}
+            <span className="font-bold">DELETED</span>. Are you sure?
+          </span>
+          <Button variant="outline" onClick={() => setConfirming(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={() => onDelete(job.id)}>
+            Confirm
+          </Button>
+        </section>
+      ) : (
+        <section className="flex w-full justify-end">
+          <Button
+            variant="danger"
+            className="flex items-center gap-1"
+            onClick={() => setConfirming(true)}
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete job
+          </Button>
+        </section>
+      )}
     </section>
   );
 }
@@ -92,6 +115,43 @@ export function JobList({
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const result = useQuery(
     trpc.jobs.list.queryOptions({ serverId, tube, state, limit }),
+  );
+  // lives here rather than in the modal, so it outlives the modal closing
+  // jobs with a delete in flight (dimmed) and deleted ones animating out
+  const [deletingIds, setDeletingIds] = useState<ReadonlySet<number>>(
+    new Set(),
+  );
+  const [removedIds, setRemovedIds] = useState<ReadonlySet<number>>(new Set());
+  const deleteJob = useMutation(
+    trpc.jobs.delete.mutationOptions({
+      onMutate: ({ jobId }) => setDeletingIds((ids) => withId(ids, jobId)),
+      onSuccess: (_data, { jobId }) => {
+        const job = result.data?.find((j) => j.id === jobId);
+        toast.success('Job deleted', {
+          description: (
+            <span>
+              id: <strong>{jobId}</strong>
+              {job != null && (
+                <>
+                  {' '} pri: <strong>{job.pri}</strong>{' '}
+                  age: <strong>{job.age}s</strong>{' '}
+                  size: <strong>{job.size}b</strong>
+                </>
+              )}
+            </span>
+          ),
+        });
+        setRemovedIds((ids) => withId(ids, jobId));
+        // let the row fade out before it drops from the list
+        setTimeout(async () => {
+          await result.refetch();
+          setRemovedIds((ids) => withoutId(ids, jobId));
+        }, removeAnimationMs);
+      },
+      onError: () => result.refetch(),
+      onSettled: (_data, _error, { jobId }) =>
+        setDeletingIds((ids) => withoutId(ids, jobId)),
+    }),
   );
 
   return (
@@ -133,6 +193,12 @@ export function JobList({
       </Card.Header>
 
       <Card.Content>
+        {deleteJob.isError && (
+          <Alert className="mb-3">
+            failed to delete job {deleteJob.variables?.jobId}:{' '}
+            {deleteJob.error.message}
+          </Alert>
+        )}
         {result.isPending ? (
           'Loading...'
         ) : result.isError ? (
@@ -155,7 +221,12 @@ export function JobList({
                 {result.data.map((job) => (
                   <Table.Row
                     key={job.id}
-                    className="cursor-pointer"
+                    className={cn(
+                      'cursor-pointer transition-all duration-300',
+                      deletingIds.has(job.id) && 'opacity-50 animate-pulse',
+                      removedIds.has(job.id) &&
+                        'opacity-0 -translate-x-8 pointer-events-none',
+                    )}
                     onClick={() => setSelectedJobId(job.id)}
                   >
                     <Table.Cell>{job.id}</Table.Cell>
@@ -188,9 +259,9 @@ export function JobList({
             <JobDetails
               serverId={serverId}
               jobId={selectedJobId}
-              onDeleted={() => {
+              onDelete={(jobId) => {
                 setSelectedJobId(null);
-                result.refetch();
+                deleteJob.mutate({ serverId, jobId });
               }}
             />
           )}

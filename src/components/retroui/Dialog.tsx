@@ -85,7 +85,11 @@ const dialogVariants = cva(
 
 interface IDialogContentProps
   extends HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof dialogVariants> {
+    VariantProps<typeof dialogVariants>,
+    Pick<
+      ReactDialog.DialogContentProps,
+      'onFocusOutside' | 'onPointerDownOutside'
+    > {
   overlay?: IDialogBackgroupProps;
 }
 
@@ -96,15 +100,41 @@ const DialogContent = React.forwardRef<HTMLDivElement, IDialogContentProps>(
       size = 'auto',
       className,
       overlay,
+      onFocusOutside,
+      onPointerDownOutside,
       ...props
     } = inputProps;
+    const contentRef = React.useRef<HTMLDivElement | null>(null);
+
+    // Radix tracks "inside" via onFocusCapture/onBlurCapture, which preact
+    // binds to focus/blur instead of React's focusin/focusout. Its document
+    // focusin listener can then see a click on a button inside the dialog
+    // as focus moving outside and dismiss it before the click lands. Ignore
+    // "outside" events whose target is actually inside the content.
+    const ignoreInside = (event: Event) => {
+      if (contentRef.current?.contains(event.target as Node)) {
+        event.preventDefault();
+      }
+    };
 
     return (
       <ReactDialog.Portal>
         <DialogBackdrop {...overlay} />
         <ReactDialog.Content
           className={cn(dialogVariants({ size }), className)}
-          ref={forwardedRef}
+          ref={(node: HTMLDivElement | null) => {
+            contentRef.current = node;
+            if (typeof forwardedRef === 'function') forwardedRef(node);
+            else if (forwardedRef) forwardedRef.current = node;
+          }}
+          onFocusOutside={(event) => {
+            ignoreInside(event);
+            onFocusOutside?.(event);
+          }}
+          onPointerDownOutside={(event) => {
+            ignoreInside(event);
+            onPointerDownOutside?.(event);
+          }}
           {...props}
         >
           <VisuallyHidden>

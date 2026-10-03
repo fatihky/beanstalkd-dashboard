@@ -36,6 +36,7 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "reflect-metadata": "^0.2.2",
+    "sonner": "^2.0.8",
     "tsyringe": "^4.10.0",
     "vite-express": "^0.22.0",
     "zod": "^4.3.6"
