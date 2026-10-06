@@ -231,7 +231,7 @@ const DialogHeaderDefaultLayout = ({ children }: { children: ReactNode }) => {
 };
 
 interface IDialogHeaderProps
-  extends HTMLAttributes<HTMLDivElement>,
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'role'>,
     VariantProps<typeof dialogHeaderVariants>,
     ReactDialog.DialogTitleProps {}
 

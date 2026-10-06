@@ -1,6 +1,6 @@
 import { Text } from '@/components/retroui/Text';
 import { cn } from '@/lib/utils';
-import type { HTMLAttributes } from 'react';
+import type { ComponentPropsWithoutRef, HTMLAttributes } from 'react';
 
 interface ICardProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -27,7 +27,7 @@ const CardHeader = ({ className, ...props }: ICardProps) => {
   );
 };
 
-const CardTitle = ({ className, ...props }: ICardProps) => {
+const CardTitle = ({ className, ...props }: ComponentPropsWithoutRef<'h3'>) => {
   return <Text as="h3" className={cn('mb-2', className)} {...props} />;
 };
 

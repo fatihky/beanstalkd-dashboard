@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { HTMLAttributes } from 'preact/compat';
+import type { ComponentPropsWithoutRef, HTMLAttributes } from 'preact/compat';
 import { Text } from '@/components/retroui/Text';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ const Alert = ({ className, variant, status, ...props }: IAlertProps) => (
 );
 Alert.displayName = 'Alert';
 
-interface IAlertTitleProps extends HTMLAttributes<HTMLHeadingElement> {}
+type IAlertTitleProps = ComponentPropsWithoutRef<'h5'>;
 const AlertTitle = ({ className, ...props }: IAlertTitleProps) => (
   <Text as="h5" className={cn(className)} {...props} />
 );
