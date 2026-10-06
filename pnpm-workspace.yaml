@@ -1,3 +1,24 @@
-onlyBuiltDependencies:
-  - '@tailwindcss/oxide'
-  - esbuild
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - '@radix-ui/react-accordion@1.2.21'
+  - '@radix-ui/react-arrow@1.1.16'
+  - '@radix-ui/react-collapsible@1.1.21'
+  - '@radix-ui/react-collection@1.1.16'
+  - '@radix-ui/react-dialog@1.2.0'
+  - '@radix-ui/react-direction@1.1.5'
+  - '@radix-ui/react-dismissable-layer@1.1.20'
+  - '@radix-ui/react-dropdown-menu@2.1.25'
+  - '@radix-ui/react-focus-scope@1.2.0'
+  - '@radix-ui/react-label@2.1.16'
+  - '@radix-ui/react-menu@2.1.25'
+  - '@radix-ui/react-popper@1.3.8'
+  - '@radix-ui/react-portal@1.1.18'
+  - '@radix-ui/react-presence@1.1.11'
+  - '@radix-ui/react-primitive@2.1.11'
+  - '@radix-ui/react-roving-focus@1.1.20'
+  - '@radix-ui/react-select@2.3.8'
+  - '@radix-ui/react-slot@1.4.0'
+  - '@radix-ui/react-use-size@1.1.5'
+  - '@radix-ui/react-visually-hidden@1.2.12'
+  - vite@8.3.3

@@ -16,6 +16,7 @@
     // Transpile our TypeScript code to JavaScript
     "module": "NodeNext",
     "outDir": "dist-server",
+    "rootDir": ".",
     // Emit type declarations
     "declaration": true,
     "lib": ["es2022"]

@@ -1,14 +1,19 @@
 import type { UseQueryResult } from '@tanstack/react-query';
-import { flexRender, type Table as TanstackTable } from '@tanstack/react-table';
+import {
+  flexRender,
+  type RowData,
+  type Table as TanstackTable,
+} from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import type { Features } from '@/lib/table';
 import { Table } from './retroui/Table';
 
-export function DataTable<RowData>({
+export function DataTable<TData extends RowData>({
   result,
   table,
 }: {
   result: UseQueryResult<unknown, unknown>;
-  table: TanstackTable<RowData>;
+  table: TanstackTable<Features, TData>;
 }) {
   return (
     <Table>
@@ -63,7 +68,7 @@ export function DataTable<RowData>({
           <Table.Row>
             <Table.Cell>Failed to fetch.</Table.Cell>
           </Table.Row>
-        ) : !result.data || table.getRowCount() === 0 ? (
+        ) : !result.data || table.getRowModel().rows.length === 0 ? (
           <Table.Row>
             <Table.Cell>No data</Table.Cell>
           </Table.Row>

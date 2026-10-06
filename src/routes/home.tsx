@@ -1,16 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  type ColumnDef,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { type ColumnDef, useTable } from '@tanstack/react-table';
 import { Check, ListFilter, X } from 'lucide-react';
 import { useEffect, useMemo } from 'preact/hooks';
 import { AppHeader } from '@/components/app-header';
 import { Button, buttonVariants } from '@/components/retroui/Button';
 import { Menu } from '@/components/retroui/Menu';
 import { TubeActions } from '@/components/tubes/tube-actions';
+import { type Features, features } from '@/lib/table';
 import { cn } from '@/lib/utils';
 import { usePreferencesStore } from '@/preferences-store';
 import { useServerStore } from '@/server-store';
@@ -30,7 +26,7 @@ export default function HomePage() {
     trpc.tubes.list.queryOptions({ serverId }, { refetchInterval: 400 }),
   );
   const prefs = usePreferencesStore();
-  const columns = useMemo<ColumnDef<TubeWithStats>[]>(
+  const columns = useMemo<ColumnDef<Features, TubeWithStats>[]>(
     () => [
       {
         id: 'name',
@@ -168,11 +164,10 @@ export default function HomePage() {
     ],
     [result.refetch, serverAddress, serverId, capabilities],
   );
-  const table = useReactTable<TubeWithStats>({
+  const table = useTable({
+    features,
     columns,
     data: result.data ?? [],
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     onSortingChange: (updater) => {
       const newSorting =
         typeof updater === 'function'

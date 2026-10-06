@@ -1,9 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  type ColumnDef,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { type ColumnDef, useTable } from '@tanstack/react-table';
 import type { ConnectionStats } from 'beanstalkd-ts';
 import { ArrowLeftCircle } from 'lucide-react';
 import { useMemo } from 'preact/hooks';
@@ -12,6 +8,7 @@ import { AppHeader } from '@/components/app-header';
 import { DataTable } from '@/components/datatable';
 import { Badge } from '@/components/retroui/Badge';
 import { buttonVariants } from '@/components/retroui/Button';
+import { type Features, features } from '@/lib/table';
 import { cn } from '@/lib/utils';
 import { useServerStore } from '@/server-store';
 import { useTRPC } from '@/utils/trpc';
@@ -30,7 +27,7 @@ function Connections({ serverId }: { serverId: number }) {
   const result = useQuery(
     trpc.connections.list.queryOptions({ serverId }, { refetchInterval: 1000 }),
   );
-  const columns = useMemo<ColumnDef<ConnectionStats>[]>(
+  const columns = useMemo<ColumnDef<Features, ConnectionStats>[]>(
     () => [
       { id: 'id', header: 'ID', accessorFn: (row) => row.id },
       { id: 'addr', header: 'Address', accessorFn: (row) => row.addr },
@@ -84,10 +81,10 @@ function Connections({ serverId }: { serverId: number }) {
     ],
     [],
   );
-  const table = useReactTable<ConnectionStats>({
+  const table = useTable({
+    features,
     columns,
     data: result.data ?? [],
-    getCoreRowModel: getCoreRowModel(),
   });
 
   return (

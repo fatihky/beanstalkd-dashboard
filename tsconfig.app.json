@@ -26,8 +26,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
-    "baseUrl": ".",
     "esModuleInterop": true
   },
   "include": ["src"]

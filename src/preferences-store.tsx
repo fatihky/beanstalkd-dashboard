@@ -1,14 +1,14 @@
-import type { SortingState, VisibilityState } from '@tanstack/react-table';
+import type { ColumnVisibilityState, SortingState } from '@tanstack/react-table';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface UserPreferences {
-  tubeListColumnVisibility: VisibilityState;
+  tubeListColumnVisibility: ColumnVisibilityState;
   tubeListSorting: SortingState;
 
   setVisibility: (
     list: 'tubeListColumnVisibility',
-    state: VisibilityState,
+    state: ColumnVisibilityState,
   ) => void;
   setSorting: (list: 'tubeListSorting', state: SortingState) => void;
 }
